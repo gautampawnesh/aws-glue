@@ -22,9 +22,11 @@ AmazonS3_node1712810848109 = glueContext.create_dynamic_frame.from_options(forma
 Join_node1712810873072 = Join.apply(frame1=AmazonS3_node1712810848109, frame2=AWSGlueDataCatalog_node1712810832560, keys1=["email"], keys2=["user"], transformation_ctx="Join_node1712810873072")
 
 # Script generated for node Drop Fields
-DropFields_node1712811006500 = DropFields.apply(frame=Join_node1712810873072, paths=["serialNumber", "shareWithPublicAsOfDate", "birthDay", "registrationDate", "shareWithResearchAsOfDate", "customerName", "shareWithFriendsAsOfDate", "email", "lastUpdateDate", "phone", "timestamp"], transformation_ctx="DropFields_node1712811006500")
+DropFields_node1712811006500 = DropFields.apply(frame=Join_node1712810873072, paths=["email", "phone"], transformation_ctx="DropFields_node1712811006500")
 
 # Script generated for node Amazon S3
-AmazonS3_node1712811257708 = glueContext.write_dynamic_frame.from_options(frame=DropFields_node1712811006500, connection_type="s3", format="json", connection_options={"path": "s3://accelerometer-trusted-v1", "partitionKeys": []}, transformation_ctx="AmazonS3_node1712811257708")
-
+AmazonS3_node1712811257708 = glueContext.getSink(path="s3://accelerometer-trusted-v1", connection_type="s3", updateBehavior="UPDATE_IN_DATABASE", partitionKeys=[], enableUpdateCatalog=True, transformation_ctx="AmazonS3_node1712811257708")
+AmazonS3_node1712811257708.setCatalogInfo(catalogDatabase="stedi-v1",catalogTableName="accelerometer_trusted_v2")
+AmazonS3_node1712811257708.setFormat("json")
+AmazonS3_node1712811257708.writeFrame(DropFields_node1712811006500)
 job.commit()
